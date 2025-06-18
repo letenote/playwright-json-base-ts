@@ -1,0 +1,21 @@
+{
+  "name": "playwright-json-ts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "copy:assets": "cp -r src/scenarios dist/scenarios",
+    "clean:dist": "rm -rf dist && rm -rf screenshots && rm -rf reports && rm -rf response_data",
+    "build": "npm run clean:dist && npx tsc && npm run copy:assets",
+    "dev": "npm run build && node dist/index.js"
+  },
+  "keywords": [],
+  "author": "Dimas Maulana Putra",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@types/node": "^24.0.3",
+    "playwright": "^1.53.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
