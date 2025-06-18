@@ -1,0 +1,25 @@
+{
+  "name": "invalid user in login",
+  "steps": [
+    {
+      "action": "goto",
+      "value": "https://prumedical.prudential.co.id/login",
+      "description": "Navigasi ke login Page"
+    },
+    {
+      "action": "clickById",
+      "selector": "[id='button::login::-::login']",
+      "description": "Press Login button"
+    },
+    {
+      "action": "waitForSelector",
+      "selector": "#root > div:nth-child(2) > div > div > div:nth-child(1) > div.css-901oao.r-pwncqc.r-1of7sfu.r-ubezar",
+      "description": "Menunggu notification"
+    },
+    {
+      "action": "screenshot",
+      "value": "portal-login-empty-form.png",
+      "description": "Capture evidence img"
+    }
+  ]
+}

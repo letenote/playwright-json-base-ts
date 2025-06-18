@@ -1,0 +1,106 @@
+{
+  "name": "scenario test 1",
+  "steps": [
+    {
+      "action": "goto",
+      "value": "https://www.instagram.com",
+      "description": "Navigasi ke instagram Home Page"
+    },
+    {
+      "action": "fill",
+      "selector": "input[name='username']",
+      "value": "dimas_maulana_putra@gmail.com",
+      "description": "Mengisi kolom username"
+    },
+    {
+      "action": "fillByLabel",
+      "selector": "Password",
+      "value": "dimsBoyz123",
+      "description": "Mengisi kolom password"
+    },
+    {
+      "action": "buttonClick",
+      "selector": "Log in",
+      "description": "Press Login button"
+    },
+    {
+      "action": "waitForResponse",
+      "description": "Tunggu respons login, simpan, dan verifikasi JSON",
+      "urlPattern": [
+        "https://www.instagram.com/api/v1/web/accounts/login/ajax/"
+      ],
+      "responseFileName": "invalid_login_response.json",
+      "expectedJson": {
+        "user": true,
+        "authenticated": false,
+        "status": "oks"
+      }
+    },
+    {
+      "action": "waitForSelector",
+      "selector": "#loginForm > span > div",
+      "description": "Menunggu notificcation"
+    },
+    {
+      "action": "screenshot",
+      "value": "ig-login-invalid-user.png",
+      "description": "Capture evidence img"
+    },
+    {
+      "action": "expectText",
+      "selector": "#loginForm > span > div",
+      "value": "Sorry, your password was incorrect. Please double-check your password.",
+      "description": "Memverifikasi teks muncul"
+    },
+    {
+      "action": "mockResponse",
+      "description": "mock response login pertama",
+      "requests": [
+        {
+          "url": "https://www.instagram.com/api/v1/web/accounts/login/ajax/",
+          "status": 200,
+          "contentType": "application/json",
+          "body": { "message": "mock perrtama dan kedua" }
+        }
+      ]
+    },
+    {
+      "action": "buttonClick",
+      "selector": "Log in",
+      "description": "Press Login button"
+    },
+    {
+      "action": "mockResponse",
+      "description": "mock response login pertama dan kedua",
+      "requests": [
+        {
+          "url": "https://www.instagram.com/api/v1/web/accounts/login/ajax/",
+          "status": 200,
+          "contentType": "application/json",
+          "body": { "message": "mock perrtama dan kedua" }
+        }
+      ]
+    },
+    {
+      "action": "buttonClick",
+      "selector": "Log in",
+      "description": "Press Login button"
+    },
+    {
+      "action": "waitForResponse",
+      "description": "Tunggu respons login, simpan, dan verifikasi JSON",
+      "urlPattern": [
+        "https://www.instagram.com/api/v1/web/accounts/login/ajax/"
+      ],
+      "responseFileName": "invalid_login_response_2.json",
+      "expectedJson": {
+        "message": "mock perrtama dan kedua"
+      }
+    },
+    {
+      "action": "screenshot",
+      "value": "ig-login-mock-response.png",
+      "description": "Capture evidence img"
+    }
+  ]
+}

@@ -6,6 +6,7 @@
     "copy:assets": "cp -r src/scenarios dist/scenarios",
     "clean:dist": "rm -rf dist && rm -rf screenshots && rm -rf reports && rm -rf response_data",
     "build": "npm run clean:dist && npx tsc && npm run copy:assets",
+    "start": "npm run build && node dist/index.js",
     "dev": "npm run build && node dist/index.js"
   },
   "keywords": [],

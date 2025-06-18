@@ -1,0 +1,56 @@
+{
+  "name": "invalid user in login",
+  "steps": [
+    {
+      "action": "goto",
+      "value": "https://prumedical.prudential.co.id/login",
+      "description": "Navigasi ke login Page"
+    },
+    {
+      "action": "fillByPlaceholder",
+      "selector": "Email",
+      "value": "dimas_maulana_putra@gmail.com",
+      "description": "Mengisi kolom email"
+    },
+    {
+      "action": "fillByPlaceholder",
+      "selector": "Password",
+      "value": "dimsBoyz123",
+      "description": "Mengisi kolom password"
+    },
+    {
+      "action": "clickById",
+      "selector": "[id='button::login::-::login']",
+      "description": "Press Login button"
+    },
+    {
+      "action": "waitForResponse",
+      "description": "Tunggu respons login, simpan, dan verifikasi JSON",
+      "urlPattern": ["https://prumedical.prudential.co.id/qrks/pmn/user/login"],
+      "responseFileName": "invalid_username_login_response.json",
+      "expectedJson": {
+        "status": {
+          "code": 1,
+          "message": "Incorrect password or email",
+          "shortCode": "INVALID_CREDENTIAL"
+        }
+      }
+    },
+    {
+      "action": "waitForSelector",
+      "selector": "div > div > div > div:nth-child(1) > div.css-901oao.r-pwncqc.r-1of7sfu.r-ubezar",
+      "description": "Menunggu notification"
+    },
+    {
+      "action": "screenshot",
+      "value": "portal-login-invalid-user.png",
+      "description": "Capture evidence img"
+    },
+    {
+      "action": "expectText",
+      "selector": "div > div > div > div:nth-child(1) > div.css-901oao.r-pwncqc.r-1of7sfu.r-ubezar",
+      "value": "Wrong Email or Password",
+      "description": "Memverifikasi teks muncul pada notification"
+    }
+  ]
+}
