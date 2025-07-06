@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import { Report } from "../../core.interface";
 import { formatDuration } from "../../helpers/formatDuration";
+import ExcelJS from "exceljs";
 
 export async function generateIndividualReport(
   reportData: Report
@@ -31,6 +32,20 @@ export async function generateIndividualReport(
     "-"
   )}.html`;
   const reportPath = path.join(reportDir, reportFileName);
+
+  // NEW VAR EXCEL JS
+  const reportTimestamp = reportData.timestamp.replace(/:/g, "-");
+  const scenarioReportDir = path.join(
+    "reports",
+    reportSubDir,
+    `${scenarioBaseName}_${reportTimestamp}`
+  ); // Subfolder untuk laporan individual
+  const reportExcelFileName = `${scenarioBaseName}_${reportData.timestamp.replace(
+    /:/g,
+    "-"
+  )}.xlsx`;
+  const excelReportPath = path.join(reportDir, reportExcelFileName);
+  // END VAR EXCEL JS
 
   let stepsHtml = "";
   for (const step of reportData.steps) {
@@ -302,4 +317,110 @@ export async function generateIndividualReport(
   } catch (error: any) {
     console.error(`Gagal menulis laporan HTML individu: ${error.message}`);
   }
+
+  // --- START NEW LOGIC UNTUK EXCEL REPORT INDIVIDUAL ---
+  try {
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "Playwright Automation Reporter";
+    workbook.lastModifiedBy = "Playwright Automation";
+    workbook.created = new Date();
+    workbook.modified = new Date();
+    workbook.properties.date1904 = true;
+
+    const detailSheet = workbook.addWorksheet("Detail Langkah Skenario");
+    detailSheet.columns = [
+      { header: "No.", key: "no", width: 5 },
+      { header: "Deskripsi Langkah", key: "description", width: 40 },
+      { header: "Aksi", key: "action", width: 20 },
+      { header: "Status", key: "status", width: 12 },
+      { header: "Pesan", key: "message", width: 60 },
+      { header: "Selector", key: "selector", width: 25 },
+      { header: "Nilai", key: "value", width: 25 },
+      { header: "Pola URL", key: "urlPattern", width: 30 },
+      { header: "Waktu Eksekusi (ms)", key: "durationMs", width: 20 },
+      { header: "Link Screenshot", key: "screenshotPath", width: 40 },
+    ];
+
+    let detailRowNo = 1;
+    for (const step of reportData.steps) {
+      detailSheet.addRow({
+        no: detailRowNo++,
+        description: step.description,
+        action: step.action,
+        status: step.status,
+        message: step.message,
+        selector: step.selector,
+        value: step.value,
+        urlPattern: Array.isArray(step.urlPattern)
+          ? step.urlPattern.join(", ")
+          : step.urlPattern,
+        durationMs: step.durationMs,
+        // Pastikan path screenshot relatif terhadap direktori laporan individual
+        screenshotPath: step.screenshotPath
+          ? {
+              text: path.basename(step.screenshotPath),
+              hyperlink: `./${path
+                .relative(scenarioReportDir, step.screenshotPath)
+                .replace(/\\/g, "/")}`,
+            }
+          : "",
+      });
+    }
+
+    // Styling Header Sheet Detail Langkah
+    detailSheet.getRow(1).eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF1976D2" },
+      }; // Blue
+      cell.alignment = { vertical: "middle", horizontal: "center" };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+    });
+
+    // Styling Status Kolom di Sheet Detail
+    detailSheet.columns.forEach((column) => {
+      if (column.key === "status") {
+        column.eachCell?.({ includeEmpty: false }, (cell) => {
+          if (parseInt(cell.row as string) > 1) {
+            // Perbaikan error "Operator '>' cannot be applied to types 'string' and 'number'"
+            if (cell.value === "SUCCESS") {
+              cell.font = { bold: true, color: { argb: "FF28A745" } };
+              cell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFE6FFE6" },
+              }; // Light green background
+            } else if (cell.value === "FAILURE") {
+              cell.font = { bold: true, color: { argb: "FFDC3545" } };
+              cell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFFFEAEA" },
+              }; // Light red background
+            }
+            cell.border = {
+              top: { style: "thin" },
+              left: { style: "thin" },
+              bottom: { style: "thin" },
+              right: { style: "thin" },
+            };
+          }
+        });
+      }
+    });
+
+    // Simpan workbook ke file
+    await workbook.xlsx.writeFile(excelReportPath);
+    console.log(`Laporan Excel individual berhasil dibuat: ${excelReportPath}`);
+  } catch (error: any) {
+    console.error(`Gagal membuat laporan Excel individual: ${error.message}`);
+  }
+  // --- END NEW LOGIC UNTUK EXCEL REPORT INDIVIDUAL ---
 }

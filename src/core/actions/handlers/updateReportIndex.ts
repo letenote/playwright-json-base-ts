@@ -2,11 +2,16 @@ import { promises as fs } from "fs";
 import path from "path";
 import { IndexReportEntry, Report } from "../../core.interface";
 import { formatDuration } from "../../helpers/formatDuration";
+// import ExcelJS from "exceljs";
 
 export async function updateReportIndex(allReports: Report[]): Promise<void> {
   const reportDir = "reports";
   const indexPath = path.join(reportDir, "index.html");
   const indexDataPath = path.join(reportDir, "reports_index.json");
+  // const excelReportPath = path.join(
+  //   reportDir,
+  //   `automation_report_${new Date().toISOString().replace(/:/g, "-")}.xlsx`
+  // );
 
   let existingIndex: IndexReportEntry[] = [];
 
@@ -289,4 +294,171 @@ export async function updateReportIndex(allReports: Report[]): Promise<void> {
   } catch (error: any) {
     console.error(`Gagal menulis index laporan HTML: ${error.message}`);
   }
+
+  // // --- START NEW LOGIC UNTUK EXCEL REPORT ---
+  // try {
+  //   const workbook = new ExcelJS.Workbook();
+  //   workbook.creator = "Playwright Automation Reporter";
+  //   workbook.lastModifiedBy = "Playwright Automation";
+  //   workbook.created = new Date();
+  //   workbook.modified = new Date();
+  //   workbook.properties.date1904 = true;
+
+  //   // Sheet 1: Ringkasan Skenario
+  //   const summarySheet = workbook.addWorksheet("Ringkasan Skenario");
+  //   summarySheet.columns = [
+  //     { header: "No.", key: "no", width: 5 },
+  //     { header: "File Skenario", key: "scenarioFile", width: 40 },
+  //     { header: "Timestamp Eksekusi", key: "timestamp", width: 25 },
+  //     { header: "Grup Skenario", key: "scenarioGroup", width: 20 },
+  //     { header: "Browser", key: "browserUsed", width: 15 },
+  //     { header: "Total Langkah", key: "totalSteps", width: 15 },
+  //     { header: "Langkah Berhasil", key: "passedSteps", width: 18 },
+  //     { header: "Langkah Gagal", key: "failedSteps", width: 15 },
+  //     { header: "Status Keseluruhan", key: "status", width: 20 },
+  //     { header: "Waktu Eksekusi", key: "executionTimeFormatted", width: 20 },
+  //     { header: "Link Laporan HTML", key: "htmlReportLink", width: 40 },
+  //   ];
+
+  //   combinedIndex.forEach((entry, idx) => {
+  //     summarySheet.addRow({
+  //       no: idx + 1,
+  //       scenarioFile: entry.scenarioFile,
+  //       timestamp: new Date(entry.timestamp).toLocaleString("id-ID"),
+  //       scenarioGroup: entry.scenarioGroup,
+  //       browserUsed: entry.browserUsed,
+  //       totalSteps: entry.totalSteps,
+  //       passedSteps: entry.passedSteps,
+  //       failedSteps: entry.failedSteps,
+  //       status: entry.status,
+  //       executionTimeFormatted: entry.executionTimeFormatted,
+  //       htmlReportLink: {
+  //         text: entry.reportFileName,
+  //         hyperlink: `./${entry.reportFileName}`,
+  //       }, // Membuat hyperlink
+  //     });
+  //   });
+
+  //   // Styling Header
+  //   summarySheet.getRow(1).eachCell((cell) => {
+  //     cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+  //     cell.fill = {
+  //       type: "pattern",
+  //       pattern: "solid",
+  //       fgColor: { argb: "FF4CAF50" },
+  //     }; // Green
+  //     cell.alignment = { vertical: "middle", horizontal: "center" };
+  //     cell.border = {
+  //       top: { style: "thin" },
+  //       left: { style: "thin" },
+  //       bottom: { style: "thin" },
+  //       right: { style: "thin" },
+  //     };
+  //   });
+
+  //   // Styling Status Kolom
+  //   summarySheet.columns.forEach((column) => {
+  //     if (column.key === "status") {
+  //       column.eachCell?.({ includeEmpty: false }, (cell) => {
+  //         if (parseInt(cell.row as string) > 1) {
+  //           // Skip header row
+  //           if (cell.value === "PASSED") {
+  //             cell.font = { bold: true, color: { argb: "FF28A745" } }; // Darker Green
+  //           } else if (cell.value === "FAILED") {
+  //             cell.font = { bold: true, color: { argb: "FFDC3545" } }; // Red
+  //           } else if (cell.value === "MIXED") {
+  //             cell.font = { bold: true, color: { argb: "FFFFC107" } }; // Amber/Orange
+  //           }
+  //         }
+  //       });
+  //     }
+  //   });
+
+  //   // Sheet 2: Detail Langkah Per Skenario
+  //   const detailSheet = workbook.addWorksheet("Detail Langkah");
+  //   detailSheet.columns = [
+  //     { header: "No.", key: "no", width: 5 },
+  //     { header: "File Skenario", key: "scenarioFile", width: 35 },
+  //     { header: "Timestamp Skenario", key: "scenarioTimestamp", width: 25 },
+  //     { header: "Grup Skenario", key: "scenarioGroup", width: 20 },
+  //     { header: "Deskripsi Langkah", key: "description", width: 40 },
+  //     { header: "Aksi", key: "action", width: 20 },
+  //     { header: "Status", key: "status", width: 12 },
+  //     { header: "Pesan", key: "message", width: 60 },
+  //     { header: "Selector", key: "selector", width: 25 },
+  //     { header: "Nilai", key: "value", width: 25 },
+  //     { header: "Pola URL", key: "urlPattern", width: 30 },
+  //     { header: "Waktu Eksekusi (ms)", key: "durationMs", width: 20 },
+  //     { header: "Link Screenshot", key: "screenshotPath", width: 40 },
+  //   ];
+
+  //   let detailRowNo = 1;
+  //   for (const report of allReports) {
+  //     for (const step of report.steps) {
+  //       detailSheet.addRow({
+  //         no: detailRowNo++,
+  //         scenarioFile: report.scenarioFile,
+  //         scenarioTimestamp: new Date(report.timestamp).toLocaleString("id-ID"),
+  //         scenarioGroup: report.scenarioGroup,
+  //         description: step.description,
+  //         action: step.action,
+  //         status: step.status,
+  //         message: step.message,
+  //         selector: step.selector,
+  //         value: step.value,
+  //         urlPattern: Array.isArray(step.urlPattern)
+  //           ? step.urlPattern.join(", ")
+  //           : step.urlPattern,
+  //         durationMs: step.durationMs,
+  //         screenshotPath: step.screenshotPath
+  //           ? {
+  //               text: path.basename(step.screenshotPath),
+  //               hyperlink: `./${path
+  //                 .relative(reportDir, step.screenshotPath)
+  //                 .replace(/\\/g, "/")}`,
+  //             }
+  //           : "",
+  //       });
+  //     }
+  //   }
+
+  //   // Styling Header Sheet Detail Langkah
+  //   detailSheet.getRow(1).eachCell((cell) => {
+  //     cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+  //     cell.fill = {
+  //       type: "pattern",
+  //       pattern: "solid",
+  //       fgColor: { argb: "FF1976D2" },
+  //     }; // Blue
+  //     cell.alignment = { vertical: "middle", horizontal: "center" };
+  //     cell.border = {
+  //       top: { style: "thin" },
+  //       left: { style: "thin" },
+  //       bottom: { style: "thin" },
+  //       right: { style: "thin" },
+  //     };
+  //   });
+
+  //   // Styling Status Kolom di Sheet Detail
+  //   detailSheet.columns.forEach((column) => {
+  //     if (column.key === "status") {
+  //       column.eachCell?.({ includeEmpty: false }, (cell) => {
+  //         if (parseInt(cell.row as string) > 1) {
+  //           if (cell.value === "SUCCESS") {
+  //             cell.font = { bold: true, color: { argb: "FF28A745" } };
+  //           } else if (cell.value === "FAILURE") {
+  //             cell.font = { bold: true, color: { argb: "FFDC3545" } };
+  //           }
+  //         }
+  //       });
+  //     }
+  //   });
+
+  //   // Simpan workbook ke file
+  //   await workbook.xlsx.writeFile(excelReportPath);
+  //   console.log(`Laporan Excel berhasil dibuat: ${excelReportPath}`);
+  // } catch (error: any) {
+  //   console.error(`Gagal membuat laporan Excel: ${error.message}`);
+  // }
+  // // --- END NEW LOGIC UNTUK EXCEL REPORT ---
 }
